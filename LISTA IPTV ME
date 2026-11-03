@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101318">
+<title>GUÍA DE TV ⚽</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--blue:#20c5f5;--bg:#101318;--panel:#20252e;--border:#343b47;--text:#f4f6fb;--muted:#aab3c2}
+body{font-family:Arial,sans-serif;color:var(--text);background:var(--bg);min-height:100vh}
+button,input,select{font:inherit}
+.navbar{display:flex;align-items:center;gap:12px;padding:12px 18px;background:#20242b;border-bottom:1px solid #353b46;position:sticky;top:0;z-index:50}
+.nav-tv,.nav-guide{border:0;cursor:pointer;color:white;display:flex;align-items:center;justify-content:center;gap:12px;font-weight:bold}
+.nav-tv{width:98px;height:76px;border-radius:19px;background:linear-gradient(135deg,#18d3d8,#329bff);box-shadow:0 5px 20px #08baff25}
+.nav-tv svg{width:34px;height:34px}
+.nav-guide{padding:14px 10px;background:transparent;border-radius:12px;font-size:22px}
+.nav-guide svg{width:25px;height:25px}
+.nav-guide.active{color:var(--blue);background:#ffffff0b}
+button:focus-visible,.channel:focus-visible{outline:2px solid white;outline-offset:3px}
+.page{display:none}.page.active{display:block}
+.container{max-width:1250px;margin:auto;padding:28px 18px}
+.section-heading{font-size:25px;margin:10px 0 24px;display:flex;align-items:center;gap:12px}
+.section-heading:before{content:"";width:6px;height:32px;border-radius:8px;background:var(--blue)}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:22px;overflow:hidden;margin-bottom:25px}
+.panel-heading{padding:23px 22px;border-bottom:1px solid var(--border)}
+.panel-heading h2{font-size:25px;margin-bottom:9px}
+.panel-heading p{color:var(--muted);line-height:1.5}
+.search-row{display:flex;gap:12px;padding:16px}
+.search-row input,.search-row select{min-width:0;padding:15px;color:white;background:#111419;border:1px solid #414957;border-radius:13px;outline:none}
+.search-row input{flex:1}.search-row select{width:220px}
+.search-row input:focus,.search-row select:focus{border-color:var(--blue)}
+.search-row option{background:#20252e}
+.channels{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:14px}
+.channel{--accent:#20c5f5;min-width:0;min-height:158px;padding:16px 10px;position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:10px;text-align:center;color:white;background:linear-gradient(145deg,#252c37,#171b23);border:1px solid #414957;border-radius:16px;cursor:pointer;transition:transform .18s,border-color .18s}
+.channel:before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--accent)}
+.channel:hover{transform:translateY(-3px);border-color:var(--accent)}
+.logo-box{width:100%;height:59px;display:flex;align-items:center;justify-content:center}
+.logo-box img{max-width:90%;max-height:55px;object-fit:contain}
+.logo-fallback{font-size:25px;font-weight:900;font-style:italic;color:var(--accent);overflow-wrap:anywhere}
+.channel h3{font-size:14px;line-height:1.35}.channel p{font-size:12px;color:var(--accent)}
+.empty{display:none;color:var(--muted);padding:25px 5px;text-align:center}
+.feature{margin-top:28px;padding:25px;border:1px solid #31485c;border-radius:18px;background:linear-gradient(120deg,#17344b,#22243a);display:flex;align-items:center;justify-content:space-between;gap:15px}
+.feature p{color:#c4d3e4;margin-top:9px;line-height:1.5}.feature .ball{font-size:48px}
+.agenda-title{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:20px;border-bottom:1px solid var(--border)}
+.agenda-title h2{font-size:22px}
+.agenda-link{display:inline-flex;align-items:center;justify-content:center;padding:11px 15px;background:#ed2447;color:white;text-decoration:none;border-radius:10px;font-size:14px;font-weight:bold}
+.agenda-frame{width:100%;height:590px;display:block;border:0;background:#111419}
+.agenda-note{padding:14px 18px;color:var(--muted);font-size:13px;line-height:1.5;border-top:1px solid var(--border)}
+#screen{display:none;position:fixed;inset:0;z-index:100;overflow-y:auto;background:#101318}
+.content{max-width:1100px;margin:auto;padding:22px 17px}
+.back{border:1px solid #414957;color:white;background:#252c37;padding:12px 18px;border-radius:10px;cursor:pointer;margin-bottom:20px}
+.confirm{max-width:580px;margin:35px auto;text-align:center;padding:32px 22px;border:1px solid #3b4656;border-radius:22px;background:#20252e}
+.selected-logo{height:85px;width:100%;object-fit:contain;margin-bottom:22px}
+.confirm h1{font-size:clamp(25px,5vw,36px);margin-bottom:15px}
+.confirm h1 span{color:var(--blue)}
+.confirm p{color:var(--muted);line-height:1.6;margin-bottom:24px}
+.watch{background:linear-gradient(90deg,#ff174f,#ff563d);color:white;border:0;border-radius:12px;padding:15px 27px;font-weight:bold;cursor:pointer}
+#player{display:none}#player h1{margin:5px 0 15px}
+.videoBox{width:100%;aspect-ratio:16/9;background:#000;border-radius:14px;overflow:hidden;border:1px solid #414957}
+iframe.video-frame{width:100%;height:100%;border:0;background:#000}
+.player-label{color:var(--muted);margin-bottom:13px}
+@media(max-width:550px){
+.navbar{padding:10px 12px}.nav-tv{width:76px;height:64px}.nav-guide{font-size:19px}
+.container{padding:22px 12px}.channels{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.channel{min-height:145px;padding:13px 7px}.channel h3{font-size:13px}
+.search-row{flex-direction:column}.search-row select{width:100%}
+.agenda-frame{height:520px}.panel-heading h2{font-size:21px}.feature{padding:18px}
+}
+</style>
+</head>
+<body>
+
+<nav class="navbar" aria-label="Navegación principal">
+<button class="nav-tv" type="button" onclick="showPage('tv')" aria-label="Televisión" title="Televisión">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="14" rx="2"/><path d="M8 2l4 4 4-4M8 12h8"/></svg>
+</button>
+<button class="nav-guide" id="guideButton" type="button" onclick="showPage('guide')" aria-label="Guía">
+<svg viewBox="0 0 24 24" fill="currentColor"><rect x="2" y="2" width="8" height="8" rx="1.5"/><rect x="14" y="2" width="8" height="8" rx="1.5"/><rect x="2" y="14" width="8" height="8" rx="1.5"/><rect x="14" y="14" width="8" height="8" rx="1.5"/></svg><span>Guía</span>
+</button>
+</nav>
+
+<main id="tvPage" class="page active">
+<div class="container">
+<h1 class="section-heading">Canales de televisión</h1>
+<section class="panel">
+<div class="panel-heading"><h2>📺 Todos los canales</h2><p>Seleccioná un canal para abrir su reproductor.</p></div>
+<div class="search-row">
+<input id="tvSearch" type="search" placeholder="Buscar canal..." aria-label="Buscar canal">
+<select id="tvCategory" aria-label="Categoría"><option value="all">Todos los canales</option><option value="sports">Deportes</option><option value="general">Entretenimiento y TV</option></select>
+</div>
+</section>
+<div class="channels" id="tvChannels"></div><p class="empty" id="tvEmpty">No se encontraron canales.</p>
+<div class="feature"><div><h2>⚽ Tu pasión, en un solo lugar</h2><p>Explorá los canales y encontrá tu próxima transmisión favorita.</p></div><div class="ball">🏟️</div></div>
+</div>
+</main>
+
+<main id="guidePage" class="page">
+<div class="container">
+<h1 class="section-heading">Guía de televisión</h1>
+<section class="panel">
+<div class="agenda-title"><h2>🗓️ Agenda Deportiva</h2><a class="agenda-link" href="https://futbollibrefullhd.org/agenda" target="_blank" rel="noopener noreferrer">Abrir agenda ↗</a></div>
+<iframe id="agendaFrame" class="agenda-frame" title="Agenda deportiva" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" src="https://futbollibrefullhd.org/agenda"></iframe>
+<p class="agenda-note">Si la agenda no aparece, usá «Abrir agenda». Algunos sitios bloquean su visualización integrada.</p>
+</section>
+<h2 class="section-heading">📺 Guía para canales</h2>
+<section class="panel">
+<div class="panel-heading"><h2>Todos los canales</h2><p>Buscá un canal o seleccioná una categoría.</p></div>
+<div class="search-row">
+<input id="guideSearch" type="search" placeholder="Buscar canal..." aria-label="Buscar canal en la guía">
+<select id="guideCategory" aria-label="Categoría de la guía"><option value="all">Todos los canales</option><option value="sports">Deportes</option><option value="general">Entretenimiento y TV</option></select>
+</div>
+</section>
+<div class="channels" id="guideChannels"></div><p class="empty" id="guideEmpty">No se encontraron canales.</p>
+</div>
+</main>
+
+<div id="screen">
+<div class="content">
+<button class="back" type="button" onclick="goBack()">← Volver</button>
+<section id="confirmation" class="confirm">
+<img id="selectedLogo" class="selected-logo" alt="">
+<h1>Estás por ver <span id="channelName"></span></h1>
+<p>¿Querés comenzar a reproducir este canal?</p>
+<button class="watch" type="button" onclick="startChannel()">▶ VER CANAL</button>
+</section>
+<section id="player">
+<h1 id="playerTitle"></h1><p class="player-label">📺 Reproductor de transmisión</p>
+<div class="videoBox"><iframe id="frame" class="video-frame" title="Reproductor de video" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe></div>
+</section>
+</div>
+</div>
+
+<script>
+"use strict";
+
+const logo = {
+  // ESPN
+  ESPN: "https://upload.wikimedia.org/wikipedia/commons/a/a7/ESPN.png?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=original",
+  ESPN2: "https://upload.wikimedia.org/wikipedia/commons/4/4f/Espn-2-hd-logo.png?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=original",
+  ESPN3: "https://upload.wikimedia.org/wikipedia/commons/5/51/ESPN3_Logo.png?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=original",
+  ESPN4: "https://upload.wikimedia.org/wikipedia/commons/7/78/ESPN_4_logo.svg?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=original",
+  ESPN5: "https://upload.wikimedia.org/wikipedia/commons/7/7e/ESPN_5_Logo.png?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=original",
+  ESPN6: "https://upload.wikimedia.org/wikipedia/commons/3/33/ESPN_6_logo.svg?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=original",
+  ESPN7: "https://upload.wikimedia.org/wikipedia/commons/7/7f/ESPN_7_logo.svg?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=original",
+  ESPNPRE: "https://upload.wikimedia.org/wikipedia/commons/d/db/ESPN_Premium_logo.png?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=original",
+  ESPNDEP: "https://upload.wikimedia.org/wikipedia/commons/8/82/Espn_deportes.png?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=original",
+  ESPNPLUS1: "https://upload.wikimedia.org/wikipedia/commons/8/87/Espn%2B.png?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=original",
+  ESPNPLUS:"https://upload.wikimedia.org/wikipedia/commons/8/87/Espn%2B.png?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=original",
+  ESPNU: "https://upload.wikimedia.org/wikipedia/commons/c/ca/ESPN_U_logo.svg?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=original",
+
+  // FOX
+  FOX: "https://upload.wikimedia.org/wikipedia/commons/b/be/Logo_Fox_Sports_Argentina_2023.png?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=original",
+  FOX2: "https://upload.wikimedia.org/wikipedia/commons/9/92/Logo_Fox_Sports_2_Argentina_2023.png?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=original",
+  FOX3: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTahk6qb3r2F8v1Ko4pceI_W4mz7XVMHg2s1JFuR-4E7g&s",
+  FOXSP: "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f2/Fox_Sports_Premium_%28Argentina%29_-_2018_logo.png/1280px-Fox_Sports_Premium_%28Argentina%29_-_2018_logo.png?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=thumbnail",
+  FOX2U: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ3TsystXVRe9r0d2RUXnM40JaMM758oR34Egb8e7-FwQ&s",
+  FOXD: "https://www.foxdeportes.com/assets/images/banner.png",
+  FOXONE: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQeoE4_Hqs4DWRnWvPNNCDJgOe3KhPds8kjd_MX6DmY6w&s=10",
+  FOXAR1: "https://upload.wikimedia.org/wikipedia/commons/9/98/Logo_FOX1.png?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=original",
+  FOXAR2: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR7ruYeJdoEENaJBI081Uv2IN12sHrep24RbgjUefyZBQ&s=10",
+
+  // DSPORTS
+  DSPORTS: "https://upload.wikimedia.org/wikipedia/commons/5/5a/DSports.png?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=original",
+  DSPORTS2: "https://d18o29lhcg4kda.cloudfront.net/fit-in/360x270/Y2gwMTAwMDAwMDAwMTI4X2xpbmVhcl9jaGFubmVsX3NzbGE_11002_LOGO_360x270.png?timestamp=1791702462813",
+  DSPORTSP: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTNo2vE-5rQyOdqOp4Tj7eRo48s_TtXlA0ZRgwnOn9c1Ax_sAv6Vu1JaJ4S&s=10",
+
+  // TNT
+  TNT: "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d3/TNT_Sports_2021_logo.svg/3840px-TNT_Sports_2021_logo.svg.png?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=thumbnail",
+  TNTC: "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/83/TNT_Sports_%282023%29.svg/3840px-TNT_Sports_%282023%29.svg.png?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=thumbnail",
+
+  // TUDN
+  TUDN: "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6c/TUDN_Logo.svg/1280px-TUDN_Logo.svg.png?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=thumbnail",
+
+  // SporTV
+  SPORTV: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ6l70GtC01IANBBuaZNuwd-9bONnnr1hYiCy609iMZjA&s=10",
+  SPORBR1: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQtfs6oq-aWObVB_ixemk5yp0-b4GrPJ9hvjxSObfnR&s=10",
+  SPORBR3: "https://upload.wikimedia.org/wikipedia/commons/9/9f/SporTV_3_logo_2016.png?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=original",
+
+  // Premiere
+  PREMIERE1: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRml8qYqs3Sc3yj8on-Bjtp2pydmi9CCKZBLX2NI4cH&s=10",
+  
+
+  // Win
+  WIN: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ8p3nj1pykXC9nPRYkwmJpwTZUkRm3Kh6ASJp0pu5GgA&s=10",
+  WIN2: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ8p3nj1pykXC9nPRYkwmJpwTZUkRm3Kh6ASJp0pu5GgA&s=10",
+  WINP: "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b0/Win_Sports%2B_logo.svg/3840px-Win_Sports%2B_logo.svg.png?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=thumbnail",
+
+  // Univisión
+  UNI: "https://upload.wikimedia.org/wikipedia/commons/9/9d/Univision_logo.svg?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=original",
+  UNIVERSO: "https://upload.wikimedia.org/wikipedia/commons/7/70/UNIVERSO_LOGO_color_black.png?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=original",
+  UNIMAS: "https://images.seeklogo.com/logo-png/30/1/unimas-logo-png_seeklogo-302180.png",
+
+  // Max
+  MAX: "https://logodownload.org/wp-content/uploads/2024/03/max-logo.png",
+  L1MAX: "https://upload.wikimedia.org/wikipedia/commons/3/38/L1MAX-LOGO.svg?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=original",
+
+  // Paramount
+  PARAMOUNT: "https://upload.wikimedia.org/wikipedia/commons/e/ea/Paramount%2B_logo.png?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=original",
+
+  // Amazon
+  AMAZON: "https://upload.wikimedia.org/wikipedia/commons/2/27/Amazon_Prime_logo.png?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=original",
+  
+
+  // Apple TV
+  APPLETV: "https://upload.wikimedia.org/wikipedia/commons/9/91/Apple_TV.png?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=original",
+
+  // Disney
+  DISNEY: "https://upload.wikimedia.org/wikipedia/commons/3/3e/Disney%2B_logo.svg?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=original",
+  DISNEYC: "https://upload.wikimedia.org/wikipedia/commons/b/bb/Disney_Channel_2014_HD.png?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=original",
+  
+  //Lpfplay
+  LPF:"https://play-lh.googleusercontent.com/Mqh0xYEQcrlh__RvG1faixNXynEF5WEMlVlhjVxVlP3iPGSNbruKNbA8y6ann0UZR9OygKWlpmfmGrsCk_kTTV0",
+
+  // Otros deportivos
+  TYC: "https://upload.wikimedia.org/wikipedia/commons/5/5e/TyCSp.png?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=original",
+  BEIN: "https://upload.wikimedia.org/wikipedia/commons/9/9f/Bein_Sports.png?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=original",
+  BEINX: "https://upload.wikimedia.org/wikipedia/commons/9/98/BeIN_Sports_XTRA_1_logo.svg?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=original",
+  DAZNLA: "https://upload.wikimedia.org/wikipedia/commons/e/e6/DAZN_LaLiga_logo.svg?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=original",
+  DAZNF: "https://upload.wikimedia.org/wikipedia/commons/7/70/DAZN_F1_logo.png?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=original",
+  NBA: "https://images.seeklogo.com/logo-png/32/1/nba-tv-logo-png_seeklogo-329250.png",
+  LALIGA1: "https://upload.wikimedia.org/wikipedia/commons/d/d9/LaLiga_Hypermotion_2023_Vertical_Logo.svg?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=original",
+  CALIENTE: "https://upload.wikimedia.org/wikipedia/commons/f/fe/Grupo_Caliente_Logo.png?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=original",
+  MLALIGA: "https://upload.wikimedia.org/wikipedia/commons/1/14/Movistar_LaLiga.svg?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=original",
+  Campeones: "https://upload.wikimedia.org/wikipedia/commons/4/43/Liga_de_Campeones_por_Movistar_Plus%2B_2022_logo.svg?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=original",
+  CBS: "https://upload.wikimedia.org/wikipedia/commons/e/ee/CBS_logo_%282020%29.svg?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=original",
+  USA: "https://seeklogo.com/images/U/usa-network-logo-9971D1071C-seeklogo.com.png",
+  AZTECA: "https://upload.wikimedia.org/wikipedia/commons/e/eb/Aztecadeporteslogo.png?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=original",
+  AZTECA7: "https://upload.wikimedia.org/wikipedia/commons/5/5f/Logo_de_Azteca_7_2024.png?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=original",
+
+  // Generales
+  TELEFE: "https://upload.wikimedia.org/wikipedia/commons/c/cc/Telefe_%28nuevo_logo%29.png?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=original",
+  TVP: "https://upload.wikimedia.org/wikipedia/commons/a/ab/Televisi%C3%B3n_P%C3%BAblica_%28Argentina_2021%29.png?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=original",
+  CANAL11: "https://upload.wikimedia.org/wikipedia/commons/e/e0/Antiguo_logo_de_Canal_Once_%28ONCE_TV_MEXICO%29.png?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=original",
+  ZAPPING: "https://upload.wikimedia.org/wikipedia/commons/4/4f/Logotipo_Zapping.svg?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=original",
+  TIGO: "https://upload.wikimedia.org/wikipedia/commons/3/3b/Tigo_Sports_2025.png?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=original",
+  VTV: "https://upload.wikimedia.org/wikipedia/commons/1/14/Logo_VTV_Plus_nuevo.png?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=original",
+  MOVISTAR: "https://upload.wikimedia.org/wikipedia/commons/d/d9/Movistar%2B_Logo.png?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=original",
+  CANAL5: "https://upload.wikimedia.org/wikipedia/commons/0/07/Logotipo-Canal-5-M%C3%A9xico.png?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=original",
+  AMERICA: "https://upload.wikimedia.org/wikipedia/commons/c/c8/Am%C3%A9rica_TV_%28Nuevo_logo_Junio_2020%29.png?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=original",
+  STAR: "https://upload.wikimedia.org/wikipedia/commons/1/15/Star_Channel.png?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=original",
+  HISTORY: "https://images.seeklogo.com/logo-png/42/1/history-logo-png_seeklogo-426513.png",
+  DISCOVERY: ""https://images.seeklogo.com/logo-png/26/1/discovery-channel-logo-png_seeklogo-268048.png",
+  RCN: "https://upload.wikimedia.org/wikipedia/commons/a/a3/CanalRCN2023.png?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=original",
+  ELTRECE: "https://upload.wikimedia.org/wikipedia/commons/e/ec/Logo_Canal_13_200_8.png?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=original",
+  TELEMUNDO: "https://upload.wikimedia.org/wikipedia/commons/8/84/Telemundo-nuevo-logo.png?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=original",
+  TELEMAX: "https://upload.wikimedia.org/wikipedia/commons/1/13/Telemax_Argentina_%282018%29.png?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=original",
+  NETTV: "https://upload.wikimedia.org/wikipedia/commons/a/a5/Net_TV_logo.png?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=original",
+  CANAL26: "https://upload.wikimedia.org/wikipedia/commons/c/c5/Canal_26_logo_%282022%29.svg?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=original",
+  VIX: "https://upload.wikimedia.org/wikipedia/commons/6/6a/ViX_Logo.svg?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=original",
+  VIX2: "https://upload.wikimedia.org/wikipedia/commons/6/6a/ViX_Logo.svg?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=original",
+
+  // Nuevos deportivos
+  FIFA: "https://upload.wikimedia.org/wikipedia/commons/a/aa/FIFA_logo_without_slogan.svg?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=original",
+  HIS: "https://cdn.prod.website-files.com/60f6d8f1589a31b90be447f5/6257d6329511103888d8c5c3_Logo-oficial-RB.png",
+  TVC: "https://www.pngitem.com/pimgs/m/349-3495872_transparent-deportes-png-televicentro-deportes-logo-png-download.png",
+  TVGOL: "https://upload.wikimedia.org/wikipedia/commons/a/ad/GOLTV.png?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=original",
+  ECDF: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSqlm2g2_GL5d3mZ6f1L1bWfgMNwb798K2K2XhtNWJOd3r9J71lznuNcKA&s=10",
+  GOL: "https://static.wikia.nocookie.net/logopedia/images/c/cb/Gol_Per%C3%BA_2016.svg/revision/latest/scale-to-width-down/1200?cb=20240224034010&path-prefix=es",
+  ELEVEN: "https://upload.wikimedia.org/wikipedia/commons/4/49/Eleven_Sports.png?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=original",
+  DAZN: "https://upload.wikimedia.org/wikipedia/commons/d/d6/Dazn-logo.png?utm_source=es.wikipedia.org&utm_campaign=index&utm_content=original",
+  PS: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRVMuxxuqLzPMNWhINuLy4fUwfxaiRoxQYqEmPZ3ceH8M7PgImK2__UVtc&s=10",
+  AGENDA: "https://img.magnific.com/vector-gratis/vector-aislado-balon-futbol-realista-sobre-blanco_1284-41932.jpg?semt=ais_hybrid&w=740&q=80"
+};
+
+
+const channels = [
+
+/* === FAMILIA ESPN === */
+{name:"ESPN",icon:"ESPN",color:"#ff304b",logo:logo.ESPN,url:"https://tvf90.com/online.php?stream=espn",category:"sports"},
+{name:"ESPN 2",icon:"ESPN 2",color:"#ff354b",logo:logo.ESPN2,url:"https://tvf90.com/online.php?stream=espn2",category:"sports"},
+{name:"ESPN 3",icon:"ESPN 3",color:"#ff354b",logo:logo.ESPN3,url:"https://tvf90.com/online.php?stream=espn3",category:"sports"},
+{name:"ESPN 4",icon:"ESPN 4",color:"#ff354b",logo:logo.ESPN4,url:"https://tvf90.com/online.php?stream=espn4",category:"sports"},
+{name:"ESPN 5",icon:"ESPN 5",color:"#ff354b",logo:logo.ESPN5,url:"https://tvf90.com/online.php?stream=espn5",category:"sports"},
+{name:"ESPN 6",icon:"ESPN 6",color:"#ff354b",logo:logo.ESPN6,url:"https://tvf90.com/online.php?stream=espn6",category:"sports"},
+{name:"ESPN 7",icon:"ESPN 7",color:"#ff354b",logo:logo.ESPN7,url:"https://tvf90.com/online.php?stream=espn7",category:"sports"},
+{name:"ESPN Premium",icon:"ESPN PREMIUM",color:"#ff304b",logo:logo.ESPNPRE,url:"https://tvf90.com/online.php?stream=espnpremium",category:"sports"},
+{name:"ESPN Deportes",icon:"ESPN DEPORTES",color:"#ff4166",logo:logo.ESPNDEP,url:"https://tvf90.com/online.php?stream=espndeportes",category:"sports"},
+{name:"ESPN+ 1",icon:"ESPN+ 1",color:"#ff4166",logo:logo.ESPNPLUS1,url:"https://streamxhd.click/live1.php?stream=espnplus1",category:"sports"},
+{name:"ESPN+ 2",icon:"ESPN+ 2",color:"#ff4166",logo:logo.ESPNPLUS,url:"https://streamxhd.click/live1.php?stream=espnplus2",category:"sports"},
+{name:"ESPN+ 3",icon:"ESPN+ 3",color:"#ff4166",logo:logo.ESPNPLUS,url:"https://streamxhd.click/live1.php?stream=espnplus3",category:"sports"},
+{name:"ESPN+ 4",icon:"ESPN+ 4",color:"#ff4166",logo:logo.ESPNPLUS,url:"https://streamxhd.click/live1.php?stream=espnplus4",category:"sports"},
+{name:"ESPNU",icon:"ESPNU",color:"#ff4166",logo:logo.ESPNU,url:"https://tvf90.com/online.php?stream=espnu",category:"sports"},
+
+/* === FAMILIA FOX SPORTS === */
+{name:"Fox Sports",icon:"FOX SPORTS",color:"#4ca5ff",logo:logo.FOX,url:"https://tvf90.com/online.php?stream=foxsports",category:"sports"},
+{name:"Fox Sports 2",icon:"FOX SPORTS 2",color:"#579aff",logo:logo.FOX2,url:"https://tvf90.com/online.php?stream=foxsports2",category:"sports"},
+{name:"Fox Sports 3",icon:"FOX SPORTS 3",color:"#579aff",logo:logo.FOX3,url:"https://tvf90.com/online.php?stream=foxsports3",category:"sports"},
+{name:"Fox Sports Premium",icon:"FOX PREMIUM",color:"#579aff",logo:logo.FOXSP,url:"https://tvf90.com/online.php?stream=foxsportspremium",category:"sports"},
+{name:"Fox Sports 2 USA",icon:"FOX 2 USA",color:"#579aff",logo:logo.FOX2U,url:"https://tvf90.com/online.php?stream=foxsports2_usa",category:"sports"},
+{name:"Fox Deportes",icon:"FOX DEPORTES",color:"#579aff",logo:logo.FOXD,url:"https://tvf90.com/online.php?stream=foxdeportes",category:"sports"},
+{name:"Fox One",icon:"FOX ONE",color:"#579aff",logo:logo.FOXONE,url:"https://streamxhd.click/live1.php?stream=foxone",category:"sports"},
+{name:"Fox 1 AR",icon:"FOX 1 AR",color:"#579aff",logo:logo.FOXAR1,url:"https://streamxhd.click/live1.php?stream=fox1ar",category:"sports"},
+{name:"Fox 2 AR",icon:"FOX 2 AR",color:"#579aff",logo:logo.FOXAR2,url:"https://streamxhd.click/live1.php?stream=fox2ar",category:"sports"},
+
+/* === FAMILIA DSPORTS === */
+{name:"DSPORTS",icon:"DSPORTS",color:"#00e6db",logo:logo.DSPORTS,url:"https://tvf90.com/online.php?stream=dsports",category:"sports"},
+{name:"DSPORTS 2",icon:"DSPORTS 2",color:"#00e6db",logo:logo.DSPORTS2,url:"https://tvf90.com/online.php?stream=dsports2",category:"sports"},
+{name:"DSPORTS Plus",icon:"DSPORTS+",color:"#00e6db",logo:logo.DSPORTSP,url:"https://tvf90.com/online.php?stream=dsportsplus",category:"sports"},
+
+/* === FAMILIA TNT SPORTS === */
+{name:"TNT Sports",icon:"TNT SPORTS",color:"#ff36d0",logo:logo.TNT,url:"https://tvf90.com/online.php?stream=tntsports",category:"sports"},
+{name:"TNT Sports Chile",icon:"TNT CHILE",color:"#ff36d0",logo:logo.TNTC,url:"https://streamxhd.click/live1.php?stream=tntsportschile",category:"sports"},
+
+/* === FAMILIA TUDN === */
+{name:"TUDN",icon:"TUDN",color:"#e63946",logo:logo.TUDN,url:"https://tvf90.com/online.php?stream=tudn",category:"sports"},
+{name:"TUDN México",icon:"TUDN MX",color:"#e63946",logo:logo.TUDN,url:"https://tvf90.com/online.php?stream=tudn_mx",category:"sports"},
+{name:"TUDN USA",icon:"TUDN USA",color:"#e63946",logo:logo.TUDN,url:"https://streamxhd.click/live1.php?stream=tudn_usa",category:"sports"},
+
+/* === FAMILIA SPORTV === */
+{name:"SporTV",icon:"SPORTV",color:"#22d5ff",logo:logo.SPORTV,url:"https://tvf90.com/online.php?stream=sportv",category:"sports"},
+{name:"SporTV 1",icon:"SPORTV 1",color:"#2acaff",logo:logo.SPORTV,url:"https://tvf90.com/online.php?stream=sporttv1",category:"sports"},
+{name:"SporTV 2",icon:"SPORTV 2",color:"#2acaff",logo:logo.SPORTV,url:"https://tvf90.com/online.php?stream=sportv2",category:"sports"},
+{name:"SporTV 3",icon:"SPORTV 3",color:"#2acaff",logo:logo.SPORTV,url:"https://tvf90.com/online.php?stream=sportv3",category:"sports"},
+{name:"SporTV BR 1",icon:"SPORTV BR1",color:"#2acaff",logo:logo.SPORBR1,url:"https://streamxhd.click/live1.php?stream=sporttvbr1",category:"sports"},
+{name:"SporTV BR 3",icon:"SPORTV BR3",color:"#2acaff",logo:logo.SPORBR3,url:"https://streamxhd.click/live1.php?stream=sporttvbr3",category:"sports"},
+
+/* === FAMILIA PREMIERE === */
+{name:"Premiere 1",icon:"PREMIERE 1",color:"#37f0a0",logo:logo.PREMIERE1,url:"https://tvf90.com/online.php?stream=premiere1",category:"sports"},
+{name:"Premiere 2",icon:"PREMIERE 2",color:"#37f0a0",logo:logo.PREMIERE1,url:"https://tvf90.com/online.php?stream=premiere2",category:"sports"},
+{name:"Premiere 3",icon:"PREMIERE 3",color:"#37f0a0",logo:logo.PREMIERE1,url:"https://tvf90.com/online.php?stream=premiere3",category:"sports"},
+{name:"Premiere 4",icon:"PREMIERE 4",color:"#37f0a0",logo:logo.PREMIERE1,url:"https://tvf90.com/online.php?stream=premiere4",category:"sports"},
+{name:"Premiere 5",icon:"PREMIERE 5",color:"#37f0a0",logo:logo.PREMIERE1,url:"https://tvf90.com/online.php?stream=premiere5",category:"sports"},
+{name:"Premiere 6",icon:"PREMIERE 6",color:"#37f0a0",logo:logo.PREMIERE1,url:"https://tvf90.com/online.php?stream=premiere6",category:"sports"},
+{name:"Premiere 7",icon:"PREMIERE 7",color:"#37f0a0",logo:logo.PREMIERE1,url:"https://tvf90.com/online.php?stream=premiere7",category:"sports"},
+{name:"Premiere 8",icon:"PREMIERE 8",color:"#37f0a0",logo:logo.PREMIERE1,url:"https://tvf90.com/online.php?stream=premiere8",category:"sports"},
+
+/* === FAMILIA WIN SPORTS === */
+{name:"Win Sports",icon:"WIN SPORTS",color:"#29d17d",logo:logo.WIN,url:"https://tvf90.com/online.php?stream=winsports",category:"sports"},
+{name:"Win Sports 2",icon:"WIN SPORTS 2",color:"#29d17d",logo:logo.WIN2,url:"https://tvf90.com/online.php?stream=winsports2",category:"sports"},
+{name:"Win Sports+",icon:"WIN SPORTS+",color:"#29d17d",logo:logo.WINP,url:"https://tvf90.com/online.php?stream=winsportsplus",category:"sports"},
+
+/* === FAMILIA UNIVISION === */
+{name:"Univisión",icon:"UNIVISION",color:"#2d82e0",logo:logo.UNI,url:"https://tvf90.com/online.php?stream=univision",category:"general"},
+{name:"Universo",icon:"UNIVERSO",color:"#5b97e6",logo:logo.UNIVERSO,url:"https://tvf90.com/online.php?stream=universo",category:"general"},
+{name:"UniMás",icon:"UNIMÁS",color:"#7ab0eb",logo:logo.UNIMAS,url:"https://tvf90.com/online.php?stream=unimas",category:"general"},
+
+/* === FAMILIA MAX / PARAMOUNT / AMAZON / APPLE TV === */
+{name:"Max 1",icon:"MAX 1",color:"#7e22ce",logo:logo.MAX,url:"https://streamxhd.click/live1.php?stream=max1",category:"general"},
+{name:"Max 2",icon:"MAX 2",color:"#7e22ce",logo:logo.MAX,url:"https://streamxhd.click/live1.php?stream=max2",category:"general"},
+{name:"L1MAX",icon:"L1MAX",color:"#7e22ce",logo:logo.L1MAX,url:"https://streamxhd.click/live1.php?stream=l1max",category:"sports"},
+{name:"Paramount+ 1",icon:"PARAMOUNT 1",color:"#0063e5",logo:logo.PARAMOUNT,url:"https://streamxhd.click/live1.php?stream=paramount1",category:"general"},
+{name:"Paramount+ 2",icon:"PARAMOUNT 2",color:"#0063e5",logo:logo.PARAMOUNT,url:"https://streamxhd.click/live1.php?stream=paramount2",category:"general"},
+{name:"Paramount+ 3",icon:"PARAMOUNT 3",color:"#0063e5",logo:logo.PARAMOUNT,url:"https://streamxhd.click/live1.php?stream=paramount3",category:"general"},
+{name:"Amazon Prime 1",icon:"AMAZON 1",color:"#00A8E1",logo:logo.AMAZON,url:"https://streamxhd.click/live1.php?stream=amazon1",category:"general"},
+{name:"Amazon Prime 2",icon:"AMAZON 2",color:"#00A8E1",logo:logo.AMAZON,url:"https://streamxhd.click/live1.php?stream=amazon2",category:"general"},
+{name:"Apple TV+ 1",icon:"APPLE TV 1",color:"#000000",logo:logo.APPLETV,url:"https://streamxhd.click/live1.php?stream=appletv1",category:"general"},
+{name:"Apple TV+ 3",icon:"APPLE TV 3",color:"#000000",logo:logo.APPLETV,url:"https://streamxhd.click/live1.php?stream=appletv3",category:"general"},
+{name:"Apple TV+ 5",icon:"APPLE TV 5",color:"#000000",logo:logo.APPLETV,url:"https://streamxhd.click/live1.php?stream=appletv5",category:"general"},
+{name:"Apple TV+ 6",icon:"APPLE TV 6",color:"#000000",logo:logo.APPLETV,url:"https://streamxhd.click/live1.php?stream=appletv6",category:"general"},
+{name:"Apple TV+ 7",icon:"APPLE TV 7",color:"#000000",logo:logo.APPLETV,url:"https://streamxhd.click/live1.php?stream=appletv7",category:"general"},
+{name:"Apple TV+ 8",icon:"APPLE TV 8",color:"#000000",logo:logo.APPLETV,url:"https://streamxhd.click/live1.php?stream=appletv8",category:"general"},
+{name:"Apple TV+ 9",icon:"APPLE TV 9",color:"#000000",logo:logo.APPLETV,url:"https://streamxhd.click/live1.php?stream=appletv9",category:"general"},
+{name:"Apple TV+ 10",icon:"APPLE TV 10",color:"#000000",logo:logo.APPLETV,url:"https://streamxhd.click/live1.php?stream=appletv10",category:"general"},
+
+/* === FAMILIA LPF PLAY === */
+{name:"LPF 1",icon:"LPF 1",color:"#20c5f5",logo:logo.LPF,url:"https://liveassets-uvod-live-encoder-assets-1-static-2.encoders.immergo.tv/6989f667-1306-4beb-86a1-a1cf4d04c811/e4f2d01d-e183-4c40-998e-062c39f3501b/1/streamPlaylist-live.m3u8",category:"sports"},
+{name:"LPF 2",icon:"LPF 2",color:"#20c5f5",logo:logo.LPF,url:"https://liveassets-uvod-live-encoder-assets-1-static-2.encoders.immergo.tv/eacd59da-0531-4c97-b83b-3774e3516773/master-live.m3u8",category:"sports"},
+{name:"LPF 3",icon:"LPF 3",color:"#20c5f5",logo:logo.LPF,url:"https://liveassets-uvod-live-encoder-assets-1-static-2.encoders.immergo.tv/77335973-65fc-4f8e-8de2-e4017ab8ffc1/master-live.m3u8",category:"sports"},
+{name:"LPF 4",icon:"LPF 4",color:"#20c5f5",logo:logo.LPF,url:"https://liveassets-uvod-live-encoder-assets-1-static-2.encoders.immergo.tv/aded4c77-9258-4f01-a6ed-e646f7af56e6/master-live.m3u8",category:"sports"},
+{name:"LPF 5",icon:"LPF 5",color:"#20c5f5",logo:logo.LPF,url:"https://liveassets-uvod-live-encoder-assets-1-static-2.encoders.immergo.tv/63736d09-8e01-4131-adc2-fb3e1a9d4ee5/master-live.m3u8",category:"sports"},
+{name:"LPF 6",icon:"LPF 6",color:"#20c5f5",logo:logo.LPF,url:"https://liveassets-uvod-live-encoder-assets-1-static-2.encoders.immergo.tv/6ade640a-3013-464b-948a-1916fc35edb4/master-live.m3u8",category:"sports"},
+{name:"LPF 7",icon:"LPF 7",color:"#20c5f5",logo:logo.LPF,url:"https://liveassets-uvod-live-encoder-assets-1-static-2.encoders.immergo.tv/d672dd47-2c6d-4fb5-b79d-59e2f0a7c4f5/master-live.m3u8",category:"sports"},
+{name:"LPF 8",icon:"LPF 8",color:"#20c5f5",logo:logo.LPF,url:"https://liveassets-uvod-live-encoder-assets-1-static-2.encoders.immergo.tv/eabf5d76-1153-4574-8c66-e35c034c1b3e/master-live.m3u8",category:"sports"},
+{name:"LPF 9",icon:"LPF 9",color:"#20c5f5",logo:logo.LPF,url:"https://liveassets-uvod-live-encoder-assets-1-static-2.encoders.immergo.tv/448bbcf7-92a6-4044-8c9b-b0d3eaff302b/f10aa885-2537-4d35-9ee3-4cfa8f1e8abc/1/streamPlaylist-live.m3u8",category:"sports"},
+{name:"LPF 10",icon:"LPF 10",color:"#20c5f5",logo:logo.LPF,url:"https://liveassets-uvod-live-encoder-assets-1-static-2.encoders.immergo.tv/319cca5d-5790-4a6c-842e-e8018f745729/95f47ae9-7bce-4fdc-ab9e-619f3fb9864b/1/streamPlaylist-live.m3u8",category:"sports"},
+{name:"LPF 11",icon:"LPF 11",color:"#20c5f5",logo:logo.LPF,url:"https://liveassets-uvod-live-encoder-assets-1-static-2.encoders.immergo.tv/87c924d1-7969-44c2-9ab8-c97d3ed5b830/b254e33e-4f51-4596-bd39-a19faa651888/1/streamPlaylist-live.m3u8",category:"sports"},
+{name:"LPF 12",icon:"LPF 12",color:"#20c5f5",logo:logo.LPF,url:"https://liveassets-uvod-live-encoder-assets-1-static-2.encoders.immergo.tv/bb917891-f734-4598-a9c5-c8cabe0adc7f/977eb7e5-910a-40b5-ad66-93df93468b9b/1/streamPlaylist-live.m3u8",category:"sports"},
+{name:"LPF 13",icon:"LPF 13",color:"#20c5f5",logo:logo.LPF,url:"https://liveassets-uvod-live-encoder-assets-1-static-2.encoders.immergo.tv/2afdb2fd-d936-4adb-8900-6a5aa1c8c6ad/caa91059-bf95-4585-838b-4fe8505a3ba3/1/streamPlaylist-live.m3u8",category:"sports"},
+{name:"LPF 14",icon:"LPF 14",color:"#20c5f5",logo:logo.LPF,url:"https://liveassets-uvod-live-encoder-assets-1-static-2.encoders.immergo.tv/b985aa90-9bb1-416a-849c-f9d2c1e609fc/e287c12c-df8f-4ac2-84c1-104032023a4d/1/streamPlaylist-live.m3u8",category:"sports"},
+{name:"LPF 15",icon:"LPF 15",color:"#20c5f5",logo:logo.LPF,url:"https://liveassets-uvod-live-encoder-assets-1-static-2.encoders.immergo.tv/5ab9f5c4-5947-41e4-a2d8-c75c0ed72d33/c25fbf6a-17fc-4d9a-bb6e-3a1aca0e8514/1/streamPlaylist-live.m3u8",category:"sports"},
+{name:"LPF 16",icon:"LPF 16",color:"#20c5f5",logo:logo.LPF,url:"https://liveassets-uvod-live-encoder-assets-1-static-2.encoders.immergo.tv/5ab9f5c4-5947-41e4-a2d8-c75c0ed72d33/c25fbf6a-17fc-4d9a-bb6e-3a1aca0e8514/1/streamPlaylist-live.m3u8",category:"sports"},
+{name:"LPF 17",icon:"LPF 17",color:"#20c5f5",logo:logo.LPF,url:"https://liveassets-uvod-live-encoder-assets-1-static-2.encoders.immergo.tv/9481338b-14e4-4578-9039-c109a89a88a4/92f926a4-d033-4fb0-8b08-cb6e0445b1a4/1/streamPlaylist-live.m3u8",category:"sports"},
+{name:"LPF 18",icon:"LPF 18",color:"#20c5f5",logo:logo.LPF,url:"https://liveassets-uvod-live-encoder-assets-1-static-2.encoders.immergo.tv/e70a124b-a7df-40eb-8c66-b65c6b066697/54a8b539-fc0a-431b-bcd1-1a3c455d496c/1/streamPlaylist-live.m3u8",category:"sports"},
+
+/* === FAMILIA DISNEY+ === */
+{name:"Disney 1",icon:"DISNEY+",color:"#4c8cff",logo:logo.DISNEY,url:"https://streamxhd.click/live1.php?stream=disney1",category:"general"},
+{name:"Disney 3",icon:"DISNEY 3",color:"#4c8cff",logo:logo.DISNEY,url:"https://streamxhd.click/live1.php?stream=disney3",category:"general"},
+{name:"Disney 4",icon:"DISNEY 4",color:"#4c8cff",logo:logo.DISNEY,url:"https://streamxhd.click/live1.php?stream=disney4",category:"general"},
+{name:"Disney 5",icon:"DISNEY 5",color:"#4c8cff",logo:logo.DISNEY,url:"https://streamxhd.click/live1.php?stream=disney5",category:"general"},
+{name:"Disney 6",icon:"DISNEY 6",color:"#4c8cff",logo:logo.DISNEY,url:"https://streamxhd.click/live1.php?stream=disney6",category:"general"},
+{name:"Disney 7",icon:"DISNEY 7",color:"#4c8cff",logo:logo.DISNEY,url:"https://streamxhd.click/live1.php?stream=disney7",category:"general"},
+{name:"Disney 8",icon:"DISNEY 8",color:"#4c8cff",logo:logo.DISNEY,url:"https://streamxhd.click/live1.php?stream=disney8",category:"general"},
+{name:"Disney 9",icon:"DISNEY 9",color:"#4c8cff",logo:logo.DISNEY,url:"https://streamxhd.click/live1.php?stream=disney9",category:"general"},
+{name:"Disney 10",icon:"DISNEY 10",color:"#4c8cff",logo:logo.DISNEY,url:"https://streamxhd.click/live1.php?stream=disney10",category:"general"},
+{name:"Disney 11",icon:"DISNEY 11",color:"#4c8cff",logo:logo.DISNEY,url:"https://streamxhd.click/live1.php?stream=disney11",category:"general"},
+{name:"Disney 17",icon:"DISNEY 17",color:"#4c8cff",logo:logo.DISNEY,url:"https://streamxhd.click/live1.php?stream=disney17",category:"general"},
+{name:"Disney 18",icon:"DISNEY 18",color:"#4c8cff",logo:logo.DISNEY,url:"https://streamxhd.click/live1.php?stream=disney18",category:"general"},
+{name:"Disney 19",icon:"DISNEY 19",color:"#4c8cff",logo:logo.DISNEY,url:"https://streamxhd.click/live1.php?stream=disney19",category:"general"},
+{name:"Disney 27",icon:"DISNEY 27",color:"#4c8cff",logo:logo.DISNEY,url:"https://streamxhd.click/live1.php?stream=disney27",category:"general"},
+{name:"Disney 28",icon:"DISNEY 28",color:"#4c8cff",logo:logo.DISNEY,url:"https://streamxhd.click/live1.php?stream=disney28",category:"general"},
+{name:"Disney 29",icon:"DISNEY 29",color:"#4c8cff",logo:logo.DISNEY,url:"https://streamxhd.click/live1.php?stream=disney29",category:"general"},
+{name:"Disney Channel",icon:"DISNEY CHANNEL",color:"#4c8cff",logo:logo.DISNEYC,url:"https://embed.saohgdassregions.com/embed2/disneychannel.php",category:"general"},
+
+/* === OTROS CANALES DEPORTIVOS === */
+{name:"TyC Sports",icon:"TyC SPORTS",color:"#19c8ff",logo:logo.TYC,url:"https://tvf90.com/online.php?stream=tycsports",category:"sports"},
+{name:"beIN SPORTS",icon:"beIN SPORTS",color:"#c45cff",logo:logo.BEIN,url:"https://tvf90.com/online.php?stream=beinsportes",category:"sports"},
+{name:"beIN SPORTS XTRA Español",icon:"beIN XTRA",color:"#e45dff",logo:logo.BEINX,url:"https://tvf90.com/online.php?stream=beinsport_xtra_espanol",category:"sports"},
+{name:"DAZN LaLiga",icon:"DAZN LALIGA",color:"#f52236",logo:logo.DAZNLA,url:"https://tvf90.com/online.php?stream=dazn_laliga",category:"sports"},
+{name:"DAZN F1",icon:"DAZN F1",color:"#f52236",logo:logo.DAZNF,url:"https://streamxhd.click/live1.php?stream=daznf1",category:"sports"},
+{name:"NBA TV",icon:"NBA TV",color:"#17408B",logo:logo.NBA,url:"https://streamxhd.click/live1.php?stream=nba1",category:"sports"},
+{name:"LaLiga Hypermotion",icon:"LALIGA HM",color:"#1e40af",logo:logo.LALIGA1,url:"https://streamxhd.click/live1.php?stream=laligahypermotion",category:"sports"},
+{name:"LaLiga Hypermotion 2",icon:"LALIGA HM 2",color:"#1e40af",logo:logo.LALIGA1,url:"https://streamxhd.click/live1.php?stream=laligahypermotion2",category:"sports"},
+{name:"Caliente TV",icon:"CALIENTE TV",color:"#ff4c30",logo:logo.CALIENTE,url:"https://tvf90.com/online.php?stream=calientetv",category:"sports"},
+{name:"M+ LaLiga TV",icon:"M+ LALIGA",color:"#b64cff",logo:logo.MLALIGA,url:"https://tvf90.com/online.php?stream=m_laligatv",category:"sports"},
+{name:"Liga de Campeones",icon:"LIGA CAMPEONES",color:"#1e40af",logo:logo.Campeones,url:"https://tvf90.com/online.php?stream=ligadecampeones1",category:"sports"},
+{name:"CBS Sports Network",icon:"CBS SPORTS",color:"#002F65",logo:logo.CBS,url:"https://tvf90.com/online.php?stream=cbs_sports_network",category:"sports"},
+{name:"USA Network",icon:"USA NETWORK",color:"#0078D7",logo:logo.USA,url:"https://tvf90.com/online.php?stream=usanetwork",category:"sports"},
+{name:"Azteca Deportes",icon:"AZTECA DEP",color:"#ff0050",logo:logo.AZTECA,url:"https://tvf90.com/online.php?stream=azteca_deportes",category:"sports"},
+{name:"Azteca 7",icon:"AZTECA 7",color:"#ff6600",logo:logo.AZTECA7,url:"https://tvf90.com/online.php?stream=azteca7",category:"general"},
+
+/* === CANALES GENERALES Y OTROS === */
+{name:"Telefe",icon:"TELEFE",color:"#b25bff",logo:logo.TELEFE,url:"https://tvf90.com/online.php?stream=telefe",category:"general"},
+{name:"TV Pública",icon:"TV PÚBLICA",color:"#ffe05b",logo:logo.TVP,url:"https://tvf90.com/online.php?stream=tvpublica",category:"general"},
+{name:"Canal 11 PT",icon:"CANAL 11 PT",color:"#ffcc00",logo:logo.CANAL11,url:"https://tvf90.com/online.php?stream=canal11_pt",category:"general"},
+{name:"Zapping EC",icon:"ZAPPING EC",color:"#00B4D8",logo:logo.ZAPPING,url:"https://streamxhd.click/live1.php?stream=zapping_ec",category:"general"},
+{name:"Tigo Sports",icon:"TIGO",color:"#009639",logo:logo.TIGO,url:"https://streamxhd.click/live1.php?stream=tigo1",category:"sports"},
+{name:"VTV Plus",icon:"VTV PLUS",color:"#E30613",logo:logo.VTV,url:"https://tvf90.com/online.php?stream=vtvplus",category:"general"},
+{name:"Movistar+",icon:"MOVISTAR",color:"#0066FF",logo:logo.MOVISTAR,url:"https://tvf90.com/online.php?stream=movistar",category:"general"},
+{name:"Canal 5 MX",icon:"CANAL 5 MX",color:"#E60028",logo:logo.CANAL5,url:"https://streamxhd.click/live1.php?stream=canal5mx",category:"general"},
+/* === NUEVOS CANALES GENERALES === */
+{name:"América TV",icon:"AMÉRICA TV",color:"#20c5f5",logo:logo.AMERICA,url:"https://embed.saohgdassregions.com/embed2/americatv.php",category:"general"},
+{name:"Star Channel",icon:"STAR CHANNEL",color:"#20c5f5",logo:logo.STAR,url:"https://embed.saohgdassregions.com/embed2/starchannel.php",category:"general"},
+{name:"History 2",icon:"HISTORY 2",color:"#20c5f5",logo:logo.HISTORY,url:"https://embed.saohgdassregions.com/embed2/history2.php",category:"general"},
+{name:"Discovery Channel",icon:"DISCOVERY",color:"#20c5f5",logo:logo.DISCOVERY,url:"https://embed.saohgdassregions.com/embed2/discoverychannel.php",category:"general"},
+{name:"History",icon:"HISTORY",color:"#20c5f5",logo:logo.HISTORY,url:"https://embed.saohgdassregions.com/embed2/history.php",category:"general"},
+{name:"RCN",icon:"RCN",color:"#20c5f5",logo:logo.RCN,url:"https://embed.saohgdassregions.com/embed2/rcn.php",category:"general"},
+{name:"El Trece",icon:"EL TRECE",color:"#20c5f5",logo:logo.ELTRECE,url:"https://embed.saohgdassregions.com/embed2/eltrece.php",category:"general"},
+{name:"Telemundo",icon:"TELEMUNDO",color:"#20c5f5",logo:logo.TELEMUNDO,url:"https://streamxhd.click/live1.php?stream=telemundo",category:"general"},
+{name:"Telemax",icon:"TELEMAX",color:"#20c5f5",logo:logo.TELEMAX,url:"https://stream-gtlc.telecentro.net.ar/hls/telemaxhls/main.m3u8",category:"general"},
+{name:"NetTV",icon:"NETTV",color:"#20c5f5",logo:logo.NETTV,url:"https://unlimited1-us.dps.live/nettv/nettv.smil/playlist.m3u8",category:"general"},
+{name:"Canal 26",icon:"CANAL 26",color:"#20c5f5",logo:logo.CANAL26,url:"https://stream-gtlc.telecentro.net.ar/hls/canal26hls/main.m3u8",category:"general"},
+{name:"ViX 1",icon:"VIX 1",color:"#20c5f5",logo:logo.VIX,url:"https://streamxhd.click/live1.php?stream=vix1",category:"general"},
+{name:"ViX 2",icon:"VIX 2",color:"#20c5f5",logo:logo.VIX2,url:"https://streamxhd.click/live1.php?stream=vix2",category:"general"},
+
+/* === NUEVOS CANALES DEPORTIVOS === */
+{name:"FIFA+",icon:"FIFA+",color:"#20c5f5",logo:logo.FIFA,url:"https://d63fabad.wurl.com/master/f36d25e7e52f1ba8d7e56eb859c636563214f541/UmFrdXRlblRWLWVzX0ZJRkFQbHVzU3BhbmlzaF9ITFM/playlist.m3u8",category:"sports"},
+{name:"His Sports",icon:"HI SPORTS",color:"#20c5f5",logo:logo.HIS,url:"https://tvf90.com/online.php?stream=hisports",category:"sports"},
+{name:"TVC Deportes",icon:"TVC DEPORTES",color:"#20c5f5",logo:logo.TYC,url:"https://tvf90.com/online.php?stream=tvc_deportes",category:"sports"},
+{name:"GolTV",icon:"GOLTV",color:"#20c5f5",logo:logo.TVGOL,url:"https://tvf90.com/online.php?stream=goltv",category:"sports"},
+{name:"ECDF LigaPro",icon:"ECDF LIGAPRO",color:"#20c5f5",logo:logo.ECDF,url:"https://tvf90.com/online.php?stream=ecdf_ligapro",category:"sports"},
+{name:"Gol Perú",icon:"GOL PERÚ",color:"#20c5f5",logo:logo.GOL,url:"https://tvf90.com/online.php?stream=golperu",category:"sports"},
+{name:"Eleven Sports 1 PT",icon:"ELEVEN 1 PT",color:"#20c5f5",logo:logo.ELEVEN,url:"https://tvf90.com/online.php?stream=eleven1_pt",category:"sports"},
+{name:"Eleven Sports 2 PT",icon:"ELEVEN 2 PT",color:"#20c5f5",logo:logo.ELEVEN,url:"https://tvf90.com/online.php?stream=eleven2_pt",category:"sports"},
+{name:"Eleven Sports 3 PT",icon:"ELEVEN 3 PT",color:"#20c5f5",logo:logo.ELEVEN,url:"https://tvf90.com/online.php?stream=eleven3_pt",category:"sports"},
+{name:"Eleven Sports 4 PT",icon:"ELEVEN 4 PT",color:"#20c5f5",logo:logo.ELEVEN,url:"https://tvf90.com/online.php?stream=eleven4_pt",category:"sports"},
+{name:"Eleven Sports 5 PT",icon:"ELEVEN 5 PT",color:"#20c5f5",logo:logo.ELEVEN,url:"https://tvf90.com/online.php?stream=eleven5_pt",category:"sports"},
+{name:"DAZN 1",icon:"DAZN 1",color:"#f52236",logo:logo.DAZN,url:"https://tvf90.com/online.php?stream=dazn1",category:"sports"},
+{name:"DAZN 2",icon:"DAZN 2",color:"#f52236",logo:logo.DAZN,url:"https://tvf90.com/online.php?stream=dazn2",category:"sports"},
+{name:"DAZN 3",icon:"DAZN 3",color:"#f52236",logo:logo.DAZN,url:"https://tvf90.com/online.php?stream=dazn3",category:"sports"},
+{name:"DAZN 4",icon:"DAZN 4",color:"#f52236",logo:logo.DAZN,url:"https://tvf90.com/online.php?stream=dazn4",category:"sports"},
+{name:"PS1",icon:"PS1",color:"#20c5f5",logo:logo.PS,url:"https://streamxhd.click/channel/?id=ps1",category:"sports"},
+{name:"Agenda",icon:"AGENDA",color:"#29f59b",logo:logo.AGENDA,url:"https://futbollibrefullhd.org/agenda",external:true,category:"sports"}
+];
+
+let selectedChannel = null;
+let previousPage = "tv";
+
+function showPage(page){
+ if(page!=="tv"&&page!=="guide")return;
+ document.getElementById("tvPage").classList.toggle("active",page==="tv");
+ document.getElementById("guidePage").classList.toggle("active",page==="guide");
+ document.getElementById("guideButton").classList.toggle("active",page==="guide");
+ document.getElementById("screen").style.display="none";
+ document.getElementById("frame").src="";
+ selectedChannel=null;
+ previousPage=page;
+ window.scrollTo({top:0,behavior:"instant"});
+}
+
+function makeChannelCard(channel){
+ const card=document.createElement("button");
+ card.type="button";card.className="channel";
+ card.style.setProperty("--accent",channel.color);
+ card.setAttribute("aria-label","Abrir "+channel.name);
+
+ const box=document.createElement("div");box.className="logo-box";
+ const fallback=document.createElement("div");
+ fallback.className="logo-fallback";fallback.textContent=channel.icon;
+
+ if(channel.logo){
+  const img=document.createElement("img");
+  img.src=channel.logo;img.alt="Logo de "+channel.name;img.loading="lazy";
+  img.onerror=()=>{img.style.display="none";if(!box.contains(fallback))box.appendChild(fallback);};
+  box.appendChild(img);
+ }else box.appendChild(fallback);
+
+ const title=document.createElement("h3");title.textContent=channel.name;
+ const subtitle=document.createElement("p");subtitle.textContent=channel.external?"Abrir agenda":"Ver canal";
+ card.append(box,title,subtitle);
+ card.addEventListener("click",()=>openChannel(channel));
+ return card;
+}
+
+function renderChannels(containerId,emptyId,searchId,categoryId){
+ const grid=document.getElementById(containerId);
+ const empty=document.getElementById(emptyId);
+ const search=document.getElementById(searchId);
+ const category=document.getElementById(categoryId);
+
+ function update(){
+  const query=search.value.trim().toLocaleLowerCase("es");
+  const cat=category.value;
+  const filtered=channels.filter(c=>
+   c.name.toLocaleLowerCase("es").includes(query)&&
+   (cat==="all"||c.category===cat)
+  );
+  grid.replaceChildren();
+  filtered.forEach(c=>grid.appendChild(makeChannelCard(c)));
+  empty.style.display=filtered.length?"none":"block";
+ }
+ search.addEventListener("input",update);
+ category.addEventListener("change",update);
+ update();
+}
+
+function openChannel(channel){
+ if(channel.external){window.open(channel.url,"_blank","noopener,noreferrer");return;}
+ selectedChannel=channel;
+ document.getElementById("screen").style.display="block";
+ document.getElementById("confirmation").style.display="block";
+ document.getElementById("player").style.display="none";
+ document.getElementById("channelName").textContent=channel.name;
+
+ const img=document.getElementById("selectedLogo");
+ img.onerror=()=>{img.style.display="none";};
+ img.style.display=channel.logo?"block":"none";
+ img.src=channel.logo||"";
+ window.scrollTo({top:0,behavior:"instant"});
+}
+
+function startChannel(){
+ if(!selectedChannel)return;
+ document.getElementById("confirmation").style.display="none";
+ document.getElementById("player").style.display="block";
+ document.getElementById("playerTitle").textContent=selectedChannel.name;
+ document.getElementById("frame").src=selectedChannel.url;
+}
+
+function goBack(){
+ document.getElementById("frame").src="";
+ document.getElementById("screen").style.display="none";
+ document.getElementById("confirmation").style.display="block";
+ document.getElementById("player").style.display="none";
+ selectedChannel=null;
+}
+
+renderChannels("tvChannels","tvEmpty","tvSearch","tvCategory");
+renderChannels("guideChannels","guideEmpty","guideSearch","guideCategory");
+</script>
+</body>
+</html>
